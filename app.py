@@ -1,17 +1,32 @@
 import mysql.connector
+from mysql.connector import Error
 
-conn_obj = mysql.connector.connect(host="localhost", user="root", passwd="0321")
 
-print(conn_obj)
+def fetch_data(query):
+    try:
+        connection = mysql.connector.connect(
+            host="localhost", database="workout_tracker", user="root", passwd="0321"
+        )
 
-cur_obj = conn_obj.cursor()
+        if connection.is_connected():
+            print("Connected to database")
+            cursor = connection.cursor()
+            cursor.execute(query)
+            records = cursor.fetchall()
+            print("Total number of rows", cursor.rowcount)
+            print("Print each record")
 
-try:
-    dbms = cur_obj.execute("show databases")
-except:
-    conn_obj.rollback()
+            for row in records:
+                print(row)
 
-for x in cur_obj:
-    print(x)
+    except Error as e:
+        print("Error while connecting", e)
 
-conn_obj.close()
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+            print("MySQL connection is closed")
+
+
+fetch_data("SELECT * FROM workouts")
